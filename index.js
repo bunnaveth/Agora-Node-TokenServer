@@ -3,9 +3,6 @@ const { RtcTokenBuilder, RtcRole } = require('agora-access-token');
 
 const PORT = process.env.PORT || 5000;
 
-const APP_ID = 'a2087cee642b4e159481cd61866e27ce';
-const APP_CERTIFICATE = 'ff1b0621dbb4442489f28ecf84494997';
-
 const app = express();
 
 const nocache = (req, resp, next) => {
@@ -19,10 +16,15 @@ const generateAccessToken = (req, resp) => {
 	// set response header
 	resp.header('Access-Control-Allow-Origin', '*');
 	// get channel name
+	const appId = req.query.appId;
+	const appCertificate = req.query.appCertificate;
 	const channelName = req.query.channelName;
-	if (!channelName) {
-		return resp.status(500).json({ error: 'channelName is required' });
+
+	let errorResponse = handleErrors(appId, appCertificate, channelName);
+	if (errorResponse) {
+		return errorResponse;
 	}
+
 	// get uid
 	let uid = req.query.uid;
 	if (!uid || uid == '') {
@@ -44,17 +46,30 @@ const generateAccessToken = (req, resp) => {
 	const currentTime = Math.floor(Date.now() / 1000);
 	const privilegeExpireTime = currentTime + expireTime;
 	// build the token
-	const token = RtcTokenBuilder.buildTokenWithUid(
-		APP_ID,
-		APP_CERTIFICATE,
-		channelName,
-		uid,
-		role,
-		privilegeExpireTime
-	);
+	const token = RtcTokenBuilder.buildTokenWithUid(appId, appCertificate, channelName, uid, role, privilegeExpireTime);
 	// return the token
-	return resp.json({ token: token });
+	return resp.json({ appId: APP_ID, channelName, token });
 };
+
+function handleErrors(appId, appCertificate, channelName) {
+	let errors = [];
+
+	if (!appId) {
+		errors.push('"appId" parameter is required');
+	}
+
+	if (!appCertificate) {
+		errors.push('"appCertificate" parameter is required');
+	}
+
+	if (!channelName) {
+		errors.push('"channelName" parameter is required');
+	}
+
+	if (errors.length) {
+		return resp.status(500).json({ errors });
+	}
+}
 
 app.get('/access_token', nocache, generateAccessToken);
 app.get('/', (req, res) => res.send('foo'));
