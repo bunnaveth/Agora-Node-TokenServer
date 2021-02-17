@@ -20,9 +20,9 @@ const generateAccessToken = (req, resp) => {
 	const appCertificate = req.query.appCertificate;
 	const channelName = req.query.channelName;
 
-	let errorResponse = handleErrors(appId, appCertificate, channelName);
-	if (errorResponse) {
-		return errorResponse;
+	let errors = checkForErrors(appId, appCertificate, channelName);
+	if (errors) {
+		return resp.status(500).json({ errors });
 	}
 
 	// get uid
@@ -51,23 +51,23 @@ const generateAccessToken = (req, resp) => {
 	return resp.json({ appId: APP_ID, channelName, token });
 };
 
-function handleErrors(appId, appCertificate, channelName) {
+function checkForErrors(appId, appCertificate, channelName) {
 	let errors = [];
 
 	if (!appId) {
-		errors.push('"appId" parameter is required');
+		errors.push('missing appId');
 	}
 
 	if (!appCertificate) {
-		errors.push('"appCertificate" parameter is required');
+		errors.push('missing appCertificate');
 	}
 
 	if (!channelName) {
-		errors.push('"channelName" parameter is required');
+		errors.push('missing channelName');
 	}
 
 	if (errors.length) {
-		return resp.status(500).json({ errors });
+		return errors;
 	}
 }
 
