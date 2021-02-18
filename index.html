@@ -1,0 +1,73 @@
+<head>
+	<title>ClaimXperience Agora Token Generator</title>
+	<style>
+		div {
+			margin: 4px;
+		}
+	</style>
+</head>
+
+<body>
+	<h3>ClaimXperience Agora Token Generator</h3>
+
+	<ol>
+		<li>Generate the channel tokens <button id="generate-token">Generate Token</button></li>
+
+		<li>
+			<span>Copy the channel information:</span>
+			<div id="app-id">
+				<input placeholder="App ID" />
+				<button>Copy App ID</button>
+			</div>
+
+			<div id="channel">
+				<input placeholder="Channel" />
+				<button>Copy Channel</button>
+			</div>
+
+			<div id="token">
+				<input placeholder="Token" />
+				<button>Copy Token</button>
+			</div>
+		</li>
+		<li>
+			<span>Paste them into:</span>
+			<a href="https://webdemo.agora.io/agora-web-showcase/examples/Agora-Web-Tutorial-1to1-Web/" target="_blank">
+				https://webdemo.agora.io/agora-web-showcase/examples/Agora-Web-Tutorial-1to1-Web/
+			</a>
+		</li>
+	</ol>
+</body>
+
+<script>
+	document.getElementById('generate-token').onclick = generateToken;
+
+	function generateToken() {
+		let channelName = window.prompt('ClaimXperience Agora Demo, please enter a channel name:', 'Demo');
+		let appId = 'a2087cee642b4e159481cd61866e27ce';
+		let appCertificate = 'ff1b0621dbb4442489f28ecf84494997';
+
+		fetch(`access-token?appId=${appId}&appCertificate=${appCertificate}&channelName=${channelName}`)
+			.then((response) => response.json())
+			.then((data) => {
+				document.querySelector('#app-id input').value = data.appId;
+				document.querySelector('#app-id button').onclick = () => copyToClipboard('app-id');
+				document.querySelector('#channel input').value = data.channelName;
+				document.querySelector('#channel button').onclick = () => copyToClipboard('channel');
+				document.querySelector('#token input').value = data.token;
+				document.querySelector('#token button').onclick = () => copyToClipboard('token');
+			});
+	}
+
+	function copyToClipboard(id) {
+		let input = document.querySelector(`#${id} input`);
+		input.select();
+		input.setSelectionRange(0, 99999);
+		document.execCommand('copy');
+
+		let button = document.querySelector(`#${id} button`);
+		let previousText = button.innerText;
+		button.innerText = 'Copied!';
+		setTimeout(() => (button.innerText = previousText), 500);
+	}
+</script>

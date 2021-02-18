@@ -1,4 +1,5 @@
 const express = require('express');
+const path = require('path');
 const { RtcTokenBuilder, RtcRole } = require('agora-access-token');
 
 const PORT = process.env.PORT || 5000;
@@ -72,7 +73,9 @@ function checkForErrors(appId, appCertificate, channelName) {
 }
 
 app.get('/access-token', nocache, generateAccessToken);
-app.get('/', (req, res) => res.send('foo'));
+app.get('/', function (request, response) {
+	response.sendFile(path.join(__dirname + '/index.html'));
+});
 app.listen(PORT, () => {
 	console.log(`Listening on port: ${PORT}`);
 });
